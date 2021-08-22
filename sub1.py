@@ -74,7 +74,7 @@ print(lag.shape)
 
 
 
-n_train_hours = 1500
+n_train_hours = train_num_19
 train = lag[:n_train_hours, :]
 test = lag[n_train_hours:, :]
 
@@ -93,16 +93,11 @@ print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
 # test_X, test_y = test[:, :-1], test[:, -1]
 # # print(test_y)
 # # reshape input to be 3D [samples, timesteps, features]
-# train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
-# print(train_X.shape[0],train_X.shape[1],train_X.shape[2])
-# test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
-# print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
-
-
 
 #testing
 model = tf.keras.Sequential()
 model.add(LSTM(50, input_shape=(train_X.shape[1], train_X.shape[2]),return_sequences=False))
+# model.add(LSTM(50,return_sequences=False))
 model.add(Dense(1))
 # sgd = tf.keras.optimizers.SGD(lr = 0.01,decay = 1e-6, momentum = 0.9,nesterov = True)
 model.compile(loss='mse', optimizer='adam')
@@ -116,6 +111,12 @@ plt.show()
 
 pred = model.predict(test_X)
 plt.plot(pred,label='prediction')
+# train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
+# print(train_X.shape[0],train_X.shape[1],train_X.shape[2])
+# test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
+# print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
+
+
 plt.plot(test_y,label='real')
 plt.show()
 

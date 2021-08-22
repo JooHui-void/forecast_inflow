@@ -9,9 +9,9 @@ import matplotlib.ticker as ticker
 from pandas import DataFrame
 from sklearn.preprocessing import MinMaxScaler
 from pandas import concat
-from tensorflow.keras.layers import LSTM,Dense,GRU,Dropout,SimpleRNN
+from tensorflow.keras.layers import LSTM,Dense
 from sklearn.metrics import mean_squared_error
-
+from tensorflow.keras import layers
 
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
     n_vars = 1 if type(data) is list else data.shape[1]
@@ -74,7 +74,7 @@ print(lag.shape)
 
 
 
-n_train_hours = train_num_19
+n_train_hours = 1500
 train = lag[:n_train_hours, :]
 test = lag[n_train_hours:, :]
 
@@ -93,55 +93,33 @@ print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
 # test_X, test_y = test[:, :-1], test[:, -1]
 # # print(test_y)
 # # reshape input to be 3D [samples, timesteps, features]
+
+#testing
+model = tf.keras.Sequential()
+model.add(LSTM(layers.Bidirectional(layers.LSTM(50,dropout=0.3),input_shape = (train_X.shape[1],train_X.shape[2]))))
+model.add(Dense(1))
+# sgd = tf.keras.optimizers.SGD(lr = 0.01,decay = 1e-6, momentum = 0.9,nesterov = True)
+model.compile(loss='mse', optimizer='adam')
+# fit network
+history = model.fit(train_X, train_y, epochs=97, batch_size=72, validation_data=(test_X, test_y), verbose=2, shuffle=False)
+
+# plot history
+plt.plot(history.history['loss'],label = 'train')
+plt.plot(history.history['val_loss'], label = 'test')
+
+plt.show()
+
+pred = model.predict(test_X)
+plt.plot(pred,label='prediction')
 # train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
 # print(train_X.shape[0],train_X.shape[1],train_X.shape[2])
 # test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
 # print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
 
 
-
-#testing
-model = tf.keras.Sequential()
-model.add(GRU(units = 50,
-              # dropout =0.2,
-              return_sequences = True,
-              input_shape = (train_X.shape[1],train_X.shape[2]),
-              activation = 'tanh'))
-
-# model.add(GRU(units = 50,
-#               return_sequences = True,
-#               activation='tanh'))
-# model.add(GRU(units = 50,
-#               activation='tanh'))
-model.add(SimpleRNN(50))
-
-model.add(Dense(1))
-sgd = tf.keras.optimizers.SGD(lr = 0.01,decay = 1e-7, momentum = 0.9,nesterov = False)
-model.compile(loss='mse', optimizer='adam')
-# fit network
-history = model.fit(train_X, train_y, epochs=90, batch_size=100, validation_data=(test_X, test_y), verbose=2, shuffle=False)
-# plot history
-
-
-pred = model.predict(test_X)
-
-RMSE = mean_squared_error(test_y,pred)**0.5
-print(RMSE)
-
-plt.plot(history.history['loss'],label = 'train')
-plt.plot(history.history['val_loss'], label = 'test')
-
-plt.show()
-
-
-plt.plot(pred,label='prediction')
 plt.plot(test_y,label='real')
 plt.show()
 
-# sgd 사용시 약 0.027
-# adam 사용시 약 0.00817
-# adam 사용, batch size 50 -> 0.01098
-# adam 사용, batch size 100 -> 0.0083
-# adam 사용, batch size 100 , dropout 0.2 -> 0.02
-# 0.011
-# layer 2개 사용 -> 0.007
+
+RMSE = mean_squared_error(test_y,pred)**0.5
+print(RMSE)
