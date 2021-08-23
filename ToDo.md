@@ -10,13 +10,13 @@
 - 현재는 adam, GRU가 성능이 좋은 것 같음
 </t>
   
-###3. learning rate 변경
+### 3. learning rate 변경
 - 일단은 0.01 언저리가 가장 적절함
 - loss 그래프가 튄다면 더 줄이는 방향 필요..
   너무 줄이면 학습이 안되고 크면  **loss가 튀는 문제가 생김**
 </t>
 
-####-> loss 를 epoch가 지남에 따라 줄여가는 방향으로 생각
+#### -> loss 를 epoch가 지남에 따라 줄여가는 방향으로 생각
 현재 tf.keras.callbacks.LearningRateScheduler를 이용하여 
 epoch가 10이 지나면 (예시) learning rate 에 0.9를 곱해준다던가 하는 방식 사용중..
 
