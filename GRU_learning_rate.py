@@ -9,7 +9,7 @@ import matplotlib.ticker as ticker
 from pandas import DataFrame
 from sklearn.preprocessing import MinMaxScaler
 from pandas import concat
-from tensorflow.keras.layers import LSTM,Dense
+from tensorflow.keras.layers import LSTM,Dense,GRU,Dropout,SimpleRNN
 from sklearn.metrics import mean_squared_error
 import math
 
@@ -93,12 +93,35 @@ print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
 # test_X, test_y = test[:, :-1], test[:, -1]
 # # print(test_y)
 # # reshape input to be 3D [samples, timesteps, features]
+# train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
+# print(train_X.shape[0],train_X.shape[1],train_X.shape[2])
+# test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
+# print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
 
+
+
+#testing
+model = tf.keras.Sequential()
+model.add(GRU(units = 50,
+              # dropout =0.2,
+              return_sequences = True,
+              input_shape = (train_X.shape[1],train_X.shape[2]),
+              activation = 'tanh'))
+
+# model.add(GRU(units = 50,
+#               return_sequences = True,
+#               activation='tanh'))
+# model.add(GRU(units = 50,
+#               activation='tanh'))
+model.add(SimpleRNN(50))
+
+model.add(Dense(1))
+# global_step = tf.Variable(0,trainable = False)
 
 def step_decay(epoch):
-   initial_lrate = 0.15
-   drop = 0.9
-   epochs_drop = 7 # 10 epoch 마다
+   initial_lrate = 0.01
+   drop = 1
+   epochs_drop = 10.0 # 10 epoch 마다
    lrate = initial_lrate * math.pow(drop,
            math.floor((1+epoch)/epochs_drop))
    return lrate
@@ -111,36 +134,26 @@ class LossHistory(tf.keras.callbacks.Callback):
 lrate = tf.keras.callbacks.LearningRateScheduler(step_decay)
 loss_history = LossHistory()
 callbacks_list = [loss_history, lrate]
+# # optimizer =tf.train.AdamOptimizer(lea)
+adam = tf.keras.optimizers.Adam(lr =0.01)
 
-
-#testing
-model = tf.keras.Sequential()
-model.add(LSTM(50, input_shape=(train_X.shape[1], train_X.shape[2]),return_sequences=False))
-# model.add(LSTM(50,return_sequences=False))
-model.add(Dense(1))
-# sgd = tf.keras.optimizers.SGD(lr = 0.01,decay = 1e-6, momentum = 0.9,nesterov = True)
 model.compile(loss='mse', optimizer='adam')
 # fit network
-history = model.fit(train_X, train_y, epochs=97, batch_size=72, callbacks = callbacks_list,validation_data=(test_X, test_y), verbose=2, shuffle=False)
+history = model.fit(train_X, train_y, epochs=100, batch_size=100,callbacks=callbacks_list, validation_data=(test_X, test_y), verbose=2, shuffle=False)
 # plot history
+
+
+pred = model.predict(test_X)
+
+RMSE = mean_squared_error(test_y,pred)**0.5
+print(RMSE)
+
 plt.plot(history.history['loss'],label = 'train')
 plt.plot(history.history['val_loss'], label = 'test')
 
 plt.show()
 
-pred = model.predict(test_X)
+
 plt.plot(pred,label='prediction')
-# train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
-# print(train_X.shape[0],train_X.shape[1],train_X.shape[2])
-# test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
-# print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
-
-
 plt.plot(test_y,label='real')
 plt.show()
-
-
-RMSE = mean_squared_error(test_y,pred)**0.5
-print(RMSE)
-
-# lstm + learning rate decay -> 나쁘지 않음...

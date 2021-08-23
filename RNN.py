@@ -123,3 +123,10 @@ plt.show()
 
 RMSE = mean_squared_error(test_y,pred)**0.5
 print(RMSE)
+
+# lr_schedule = keras.optimizers.schedules.ExponentialDecay(
+#     initiar_learning_rate,
+#     decay_steps=100000,
+#     decay_rate=0.96,
+#     staircase = True
+# )

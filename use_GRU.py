@@ -116,7 +116,17 @@ model.add(GRU(units = 50,
 model.add(SimpleRNN(50))
 
 model.add(Dense(1))
-sgd = tf.keras.optimizers.SGD(lr = 0.01,decay = 1e-7, momentum = 0.9,nesterov = False)
+# global_step = tf.Variable(0,trainable = False)
+# lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+#     0.01,
+#     global_step,
+#     decay_steps=100000,
+#     decay_rate=0.96,
+#     staircase = True
+# )
+# # optimizer =tf.train.AdamOptimizer(lea)
+adam = tf.keras.optimizers.Adam(lr =0.01)
+
 model.compile(loss='mse', optimizer='adam')
 # fit network
 history = model.fit(train_X, train_y, epochs=90, batch_size=100, validation_data=(test_X, test_y), verbose=2, shuffle=False)
